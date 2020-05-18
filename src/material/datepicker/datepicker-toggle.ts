@@ -24,8 +24,8 @@ import {
 } from '@angular/core';
 import {MatButton} from '@angular/material/button';
 import {merge, of as observableOf, Subscription} from 'rxjs';
-import {MatDatepicker} from './datepicker';
 import {MatDatepickerIntl} from './datepicker-intl';
+import {MatDatepickerBase, MatDatepickerControl} from './datepicker-base';
 
 
 /** Can be used to override the icon of a `matDatepickerToggle`. */
@@ -43,7 +43,7 @@ export class MatDatepickerToggleIcon {}
     'class': 'mat-datepicker-toggle',
     // Always set the tabindex to -1 so that it doesn't overlap with any custom tabindex the
     // consumer may have provided, while still being able to receive focus.
-    '[attr.tabindex]': '-1',
+    '[attr.tabindex]': 'disabled ? null : -1',
     '[class.mat-datepicker-toggle-active]': 'datepicker && datepicker.opened',
     '[class.mat-accent]': 'datepicker && datepicker.color === "accent"',
     '[class.mat-warn]': 'datepicker && datepicker.color === "warn"',
@@ -57,7 +57,7 @@ export class MatDatepickerToggle<D> implements AfterContentInit, OnChanges, OnDe
   private _stateChanges = Subscription.EMPTY;
 
   /** Datepicker instance that the button will toggle. */
-  @Input('for') datepicker: MatDatepicker<D>;
+  @Input('for') datepicker: MatDatepickerBase<MatDatepickerControl<any>, D>;
 
   /** Tabindex for the toggle. */
   @Input() tabIndex: number | null;

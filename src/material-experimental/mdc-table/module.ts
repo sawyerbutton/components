@@ -6,7 +6,6 @@
  * found in the LICENSE file at https://angular.io/license
  */
 
-import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
 import {MatCommonModule} from '@angular/material/core';
 import {MatTable} from './table';
@@ -26,7 +25,8 @@ import {
   MatHeaderRow,
   MatHeaderRowDef,
   MatRow,
-  MatRowDef
+  MatRowDef,
+  MatNoDataRow
 } from './row';
 
 const EXPORTED_DECLARATIONS = [
@@ -51,11 +51,12 @@ const EXPORTED_DECLARATIONS = [
   MatHeaderRow,
   MatRow,
   MatFooterRow,
+  MatNoDataRow,
 ];
 
 @NgModule({
-  imports: [MatCommonModule, CommonModule, CdkTableModule],
-  exports: EXPORTED_DECLARATIONS,
+  imports: [MatCommonModule, CdkTableModule],
+  exports: [MatCommonModule, EXPORTED_DECLARATIONS],
   declarations: EXPORTED_DECLARATIONS,
 })
 export class MatTableModule {

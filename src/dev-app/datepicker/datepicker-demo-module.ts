@@ -18,7 +18,12 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
 import {MatSelectModule} from '@angular/material/select';
 import {RouterModule} from '@angular/router';
-import {CustomHeader, CustomHeaderNgContent, DatepickerDemo} from './datepicker-demo';
+import {
+  CustomHeader,
+  CustomHeaderNgContent,
+  DatepickerDemo,
+  CustomRangeStrategy,
+} from './datepicker-demo';
 
 @NgModule({
   imports: [
@@ -35,8 +40,7 @@ import {CustomHeader, CustomHeaderNgContent, DatepickerDemo} from './datepicker-
     ReactiveFormsModule,
     RouterModule.forChild([{path: '', component: DatepickerDemo}]),
   ],
-  declarations: [CustomHeader, CustomHeaderNgContent, DatepickerDemo],
-  entryComponents: [CustomHeader, CustomHeaderNgContent],
+  declarations: [CustomHeader, CustomHeaderNgContent, DatepickerDemo, CustomRangeStrategy],
 })
 export class DatepickerDemoModule {
 }

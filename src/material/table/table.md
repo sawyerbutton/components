@@ -210,6 +210,9 @@ it is contained in the reduced string, and the row would be displayed in the tab
 To override the default filtering behavior, a custom `filterPredicate` function can be set which
 takes a data object and filter string and returns true if the data object is considered a match.
 
+If you want to show a message when not data matches the filter, you can use the `*matNoDataRow`
+directive.
+
 <!--- example(table-filtering) -->
 
 #### Selection
@@ -358,7 +361,7 @@ The `MatTable` does not require that you use a native HTML table. Instead, you c
 alternative approach that uses `display: flex` for the table's styles.
 
 This alternative approach replaces the native table element tags with the `MatTable` directive
-selectors. For example, `<table mat-table>` becomes `<mat-table>`; `<tr mat-row`> becomes
+selectors. For example, `<table mat-table>` becomes `<mat-table>`; `<tr mat-row>` becomes
 `<mat-row>`. The following shows a previous example using this alternative template:
 
 ```html

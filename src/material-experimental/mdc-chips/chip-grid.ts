@@ -8,7 +8,7 @@
 
 import {Directionality} from '@angular/cdk/bidi';
 import {BooleanInput, coerceBooleanProperty} from '@angular/cdk/coercion';
-import {BACKSPACE, TAB} from '@angular/cdk/keycodes';
+import {BACKSPACE, TAB, HOME, END} from '@angular/cdk/keycodes';
 import {
   AfterContentInit,
   AfterViewInit,
@@ -87,7 +87,6 @@ const _MatChipGridMixinBase: CanUpdateErrorStateCtor & typeof MatChipGridBase =
     '[tabIndex]': '_chips && _chips.length === 0 ? -1 : tabIndex',
     // TODO: replace this binding with use of AriaDescriber
     '[attr.aria-describedby]': '_ariaDescribedby || null',
-    '[attr.aria-required]': 'role ? required : null',
     '[attr.aria-disabled]': 'disabled.toString()',
     '[attr.aria-invalid]': 'errorState',
     '[class.mat-mdc-chip-list-disabled]': 'disabled',
@@ -205,7 +204,10 @@ export class MatChipGrid extends _MatChipGridMixinBase implements AfterContentIn
   set value(value: any) {
     this._value = value;
   }
-  protected _value: any;
+  protected _value: Array<any> = [];
+
+  /** An object used to control when error messages are shown. */
+  @Input() errorStateMatcher: ErrorStateMatcher;
 
   /** Combined stream of all of the child chips' blur events. */
   get chipBlurChanges(): Observable<MatChipEvent> {
@@ -401,17 +403,27 @@ export class MatChipGrid extends _MatChipGridMixinBase implements AfterContentIn
   /** Handles custom keyboard events. */
   _keydown(event: KeyboardEvent) {
     const target = event.target as HTMLElement;
+    const keyCode = event.keyCode;
+    const manager = this._keyManager;
 
     // If they are on an empty input and hit backspace, focus the last chip
-    if (event.keyCode === BACKSPACE && this._isEmptyInput(target)) {
+    if (keyCode === BACKSPACE && this._isEmptyInput(target)) {
       if (this._chips.length) {
-        this._keyManager.setLastCellActive();
+        manager.setLastCellActive();
       }
       event.preventDefault();
-    } else if (event.keyCode === TAB && target.id !== this._chipInput!.id ) {
+    } else if (keyCode === TAB && target.id !== this._chipInput!.id ) {
       this._allowFocusEscape();
     } else if (this._originatesFromChip(event)) {
-      this._keyManager.onKeydown(event);
+      if (keyCode === HOME) {
+        manager.setFirstCellActive();
+        event.preventDefault();
+      } else if (keyCode === END) {
+        manager.setLastCellActive();
+        event.preventDefault();
+      } else {
+        manager.onKeydown(event);
+      }
     }
     this.stateChanges.next();
   }
@@ -469,9 +481,9 @@ export class MatChipGrid extends _MatChipGridMixinBase implements AfterContentIn
   }
 
  /** Emits change event to set the model value. */
-  private _propagateChanges(fallbackValue?: any): void {
+  private _propagateChanges(): void {
     const valueToEmit = this._chips.length ? this._chips.toArray().map(
-      chip => chip.value) : fallbackValue;
+      chip => chip.value) : [];
     this._value = valueToEmit;
     this.change.emit(new MatChipGridChange(this, valueToEmit));
     this.valueChange.emit(valueToEmit);

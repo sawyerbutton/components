@@ -107,7 +107,8 @@ export interface ModifierKeys {
 export interface TestElement {
     blur(): Promise<void>;
     clear(): Promise<void>;
-    click(relativeX?: number, relativeY?: number): Promise<void>;
+    click(): Promise<void>;
+    click(relativeX: number, relativeY: number): Promise<void>;
     focus(): Promise<void>;
     getAttribute(name: string): Promise<string | null>;
     getCssValue(property: string): Promise<string>;
@@ -115,6 +116,7 @@ export interface TestElement {
     getProperty(name: string): Promise<any>;
     hasClass(name: string): Promise<boolean>;
     hover(): Promise<void>;
+    isFocused(): Promise<boolean>;
     matchesSelector(selector: string): Promise<boolean>;
     sendKeys(...keys: (string | TestKey)[]): Promise<void>;
     sendKeys(modifiers: ModifierKeys, ...keys: (string | TestKey)[]): Promise<void>;

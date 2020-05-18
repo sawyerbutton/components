@@ -147,27 +147,29 @@ describe('MDC-based MatTabNavBar', () => {
       expect(tabLinkElement.classList).toContain('mat-mdc-tab-disabled');
     });
 
-    it('should re-align the ink bar when the direction changes', () => {
+    it('should re-align the ink bar when the direction changes', fakeAsync(() => {
       const inkBar = fixture.componentInstance.tabNavBar._inkBar;
 
       spyOn(inkBar, 'alignToElement');
 
       dirChange.next();
+      tick();
       fixture.detectChanges();
 
       expect(inkBar.alignToElement).toHaveBeenCalled();
-    });
+    }));
 
-    it('should re-align the ink bar when the tabs list change', () => {
+    it('should re-align the ink bar when the tabs list change', fakeAsync(() => {
       const inkBar = fixture.componentInstance.tabNavBar._inkBar;
 
       spyOn(inkBar, 'alignToElement');
 
       fixture.componentInstance.tabs = [1, 2, 3, 4];
       fixture.detectChanges();
+      tick();
 
       expect(inkBar.alignToElement).toHaveBeenCalled();
-    });
+    }));
 
     it('should re-align the ink bar when the tab labels change the width', done => {
       const inkBar = fixture.componentInstance.tabNavBar._inkBar;
@@ -321,6 +323,14 @@ describe('MDC-based MatTabNavBar', () => {
 
       expect(fixture.componentInstance.tabLinks.toArray().every(tabLink => tabLink.rippleDisabled))
         .toBe(true, 'Expected every tab link to have ripples disabled');
+    });
+
+    it('should have a focus indicator', () => {
+      const tabLinkNativeElements =
+          [...fixture.debugElement.nativeElement.querySelectorAll('.mat-mdc-tab-link')];
+
+      expect(tabLinkNativeElements
+          .every(element => element.classList.contains('mat-mdc-focus-indicator'))).toBe(true);
     });
   });
 

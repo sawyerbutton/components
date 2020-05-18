@@ -24,10 +24,10 @@ import {
   MatHeaderRow,
   MatHeaderRowDef,
   MatRow,
-  MatRowDef
+  MatRowDef,
+  MatNoDataRow
 } from './row';
 import {MatTextColumn} from './text-column';
-import {CommonModule} from '@angular/common';
 import {MatCommonModule} from '@angular/material/core';
 
 const EXPORTED_DECLARATIONS = [
@@ -52,6 +52,7 @@ const EXPORTED_DECLARATIONS = [
   MatHeaderRow,
   MatRow,
   MatFooterRow,
+  MatNoDataRow,
 
   MatTextColumn,
 ];
@@ -59,10 +60,9 @@ const EXPORTED_DECLARATIONS = [
 @NgModule({
   imports: [
     CdkTableModule,
-    CommonModule,
     MatCommonModule,
   ],
-  exports: EXPORTED_DECLARATIONS,
+  exports: [MatCommonModule, EXPORTED_DECLARATIONS],
   declarations: EXPORTED_DECLARATIONS,
 })
 export class MatTableModule {}

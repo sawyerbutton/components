@@ -24,23 +24,23 @@ export declare const MAT_DIALOG_SCROLL_STRATEGY_PROVIDER: {
 export declare function MAT_DIALOG_SCROLL_STRATEGY_PROVIDER_FACTORY(overlay: Overlay): () => ScrollStrategy;
 
 export declare class MatDialog implements OnDestroy {
-    readonly _afterAllClosed: Subject<void>;
+    get _afterAllClosed(): Subject<void>;
     readonly afterAllClosed: Observable<void>;
-    readonly afterOpened: Subject<MatDialogRef<any>>;
-    readonly openDialogs: MatDialogRef<any>[];
+    get afterOpened(): Subject<MatDialogRef<any>>;
+    get openDialogs(): MatDialogRef<any>[];
     constructor(_overlay: Overlay, _injector: Injector,
     _location: Location, _defaultOptions: MatDialogConfig, scrollStrategy: any, _parentDialog: MatDialog, _overlayContainer: OverlayContainer);
     closeAll(): void;
     getDialogById(id: string): MatDialogRef<any> | undefined;
     ngOnDestroy(): void;
     open<T, D = any, R = any>(componentOrTemplateRef: ComponentType<T> | TemplateRef<T>, config?: MatDialogConfig<D>): MatDialogRef<T, R>;
-    static ɵfac: i0.ɵɵFactoryDef<MatDialog>;
+    static ɵfac: i0.ɵɵFactoryDef<MatDialog, [null, null, { optional: true; }, { optional: true; }, null, { optional: true; skipSelf: true; }, null]>;
     static ɵprov: i0.ɵɵInjectableDef<MatDialog>;
 }
 
 export declare class MatDialogActions {
     static ɵdir: i0.ɵɵDirectiveDefWithMeta<MatDialogActions, "[mat-dialog-actions], mat-dialog-actions, [matDialogActions]", never, {}, {}, never>;
-    static ɵfac: i0.ɵɵFactoryDef<MatDialogActions>;
+    static ɵfac: i0.ɵɵFactoryDef<MatDialogActions, never>;
 }
 
 export declare const matDialogAnimations: {
@@ -56,8 +56,8 @@ export declare class MatDialogClose implements OnInit, OnChanges {
     constructor(dialogRef: MatDialogRef<any>, _elementRef: ElementRef<HTMLElement>, _dialog: MatDialog);
     ngOnChanges(changes: SimpleChanges): void;
     ngOnInit(): void;
-    static ɵdir: i0.ɵɵDirectiveDefWithMeta<MatDialogClose, "[mat-dialog-close], [matDialogClose]", ["matDialogClose"], { 'ariaLabel': "aria-label", 'type': "type", 'dialogResult': "mat-dialog-close", '_matDialogClose': "matDialogClose" }, {}, never>;
-    static ɵfac: i0.ɵɵFactoryDef<MatDialogClose>;
+    static ɵdir: i0.ɵɵDirectiveDefWithMeta<MatDialogClose, "[mat-dialog-close], [matDialogClose]", ["matDialogClose"], { "ariaLabel": "aria-label"; "type": "type"; "dialogResult": "mat-dialog-close"; "_matDialogClose": "matDialogClose"; }, {}, never>;
+    static ɵfac: i0.ɵɵFactoryDef<MatDialogClose, [{ optional: true; }, null, null]>;
 }
 
 export declare class MatDialogConfig<D = any> {
@@ -99,21 +99,22 @@ export declare class MatDialogContainer extends BasePortalOutlet {
     _config: MatDialogConfig);
     _onAnimationDone(event: AnimationEvent): void;
     _onAnimationStart(event: AnimationEvent): void;
+    _recaptureFocus(): void;
     _startExitAnimation(): void;
     attachComponentPortal<T>(portal: ComponentPortal<T>): ComponentRef<T>;
     attachTemplatePortal<C>(portal: TemplatePortal<C>): EmbeddedViewRef<C>;
-    static ɵcmp: i0.ɵɵComponentDefWithMeta<MatDialogContainer, "mat-dialog-container", never, {}, {}, never>;
-    static ɵfac: i0.ɵɵFactoryDef<MatDialogContainer>;
+    static ɵcmp: i0.ɵɵComponentDefWithMeta<MatDialogContainer, "mat-dialog-container", never, {}, {}, never, never>;
+    static ɵfac: i0.ɵɵFactoryDef<MatDialogContainer, [null, null, null, { optional: true; }, null]>;
 }
 
 export declare class MatDialogContent {
     static ɵdir: i0.ɵɵDirectiveDefWithMeta<MatDialogContent, "[mat-dialog-content], mat-dialog-content, [matDialogContent]", never, {}, {}, never>;
-    static ɵfac: i0.ɵɵFactoryDef<MatDialogContent>;
+    static ɵfac: i0.ɵɵFactoryDef<MatDialogContent, never>;
 }
 
 export declare class MatDialogModule {
     static ɵinj: i0.ɵɵInjectorDef<MatDialogModule>;
-    static ɵmod: i0.ɵɵNgModuleDefWithMeta<MatDialogModule, [typeof i1.MatDialogContainer, typeof i2.MatDialogClose, typeof i2.MatDialogTitle, typeof i2.MatDialogActions, typeof i2.MatDialogContent], [typeof i3.CommonModule, typeof i4.OverlayModule, typeof i5.PortalModule, typeof i6.MatCommonModule], [typeof i1.MatDialogContainer, typeof i2.MatDialogClose, typeof i2.MatDialogTitle, typeof i2.MatDialogContent, typeof i2.MatDialogActions, typeof i6.MatCommonModule]>;
+    static ɵmod: i0.ɵɵNgModuleDefWithMeta<MatDialogModule, [typeof i1.MatDialogContainer, typeof i2.MatDialogClose, typeof i2.MatDialogTitle, typeof i2.MatDialogActions, typeof i2.MatDialogContent], [typeof i3.OverlayModule, typeof i4.PortalModule, typeof i5.MatCommonModule], [typeof i1.MatDialogContainer, typeof i2.MatDialogClose, typeof i2.MatDialogTitle, typeof i2.MatDialogContent, typeof i2.MatDialogActions, typeof i5.MatCommonModule]>;
 }
 
 export declare class MatDialogRef<T, R = any> {
@@ -145,8 +146,8 @@ export declare class MatDialogTitle implements OnInit {
     id: string;
     constructor(_dialogRef: MatDialogRef<any>, _elementRef: ElementRef<HTMLElement>, _dialog: MatDialog);
     ngOnInit(): void;
-    static ɵdir: i0.ɵɵDirectiveDefWithMeta<MatDialogTitle, "[mat-dialog-title], [matDialogTitle]", ["matDialogTitle"], { 'id': "id" }, {}, never>;
-    static ɵfac: i0.ɵɵFactoryDef<MatDialogTitle>;
+    static ɵdir: i0.ɵɵDirectiveDefWithMeta<MatDialogTitle, "[mat-dialog-title], [matDialogTitle]", ["matDialogTitle"], { "id": "id"; }, {}, never>;
+    static ɵfac: i0.ɵɵFactoryDef<MatDialogTitle, [{ optional: true; }, null, null]>;
 }
 
 export declare function throwMatDialogContentAlreadyAttachedError(): void;

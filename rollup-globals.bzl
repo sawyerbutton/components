@@ -65,15 +65,15 @@ ROLLUP_GLOBALS = {
     "@material/tab-bar": "mdc.tabBar",
     "@material/tab-indicator": "mdc.tabIndicator",
     "@material/tab-scroller": "mdc.tabScroller",
-    "@material/text-field": "mdc.textField",
+    "@material/textfield": "mdc.textfield",
     "@material/top-app-bar": "mdc.topAppBar",
 
     # Third-party libraries.
+    "kagekiri": "kagekiri",
     "moment": "moment",
     "protractor": "protractor",
     "rxjs": "rxjs",
     "rxjs/operators": "rxjs.operators",
-    "tslib": "tslib",
 }
 
 # Converts a string from dash-case to lower camel case.

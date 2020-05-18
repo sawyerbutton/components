@@ -3,6 +3,7 @@ import {Component, ViewChild} from '@angular/core';
 import {YouTubePlayerModule} from './youtube-module';
 import {YouTubePlayer, DEFAULT_PLAYER_WIDTH, DEFAULT_PLAYER_HEIGHT} from './youtube-player';
 import {createFakeYtNamespace} from './fake-youtube-player';
+import {Subscription} from 'rxjs';
 
 const VIDEO_ID = 'a12345';
 
@@ -22,7 +23,7 @@ describe('YoutubePlayer', () => {
 
     TestBed.configureTestingModule({
       imports: [YouTubePlayerModule],
-      declarations: [TestApp],
+      declarations: [TestApp, StaticStartEndSecondsApp, NoEventsApp],
     });
 
     TestBed.compileComponents();
@@ -274,6 +275,80 @@ describe('YoutubePlayer', () => {
       testComponent.youtubePlayer.getVideoEmbedCode();
       expect(playerSpy.getVideoEmbedCode).toHaveBeenCalled();
     });
+
+    it('should play on init if playVideo was called before the API has loaded', () => {
+      testComponent.youtubePlayer.playVideo();
+      expect(testComponent.youtubePlayer.getPlayerState()).toBe(YT.PlayerState.PLAYING);
+
+      events.onReady({target: playerSpy});
+
+      expect(playerSpy.playVideo).toHaveBeenCalled();
+    });
+
+    it('should pause on init if pauseVideo was called before the API has loaded', () => {
+      testComponent.youtubePlayer.pauseVideo();
+      expect(testComponent.youtubePlayer.getPlayerState()).toBe(YT.PlayerState.PAUSED);
+
+      events.onReady({target: playerSpy});
+
+      expect(playerSpy.pauseVideo).toHaveBeenCalled();
+    });
+
+    it('should stop on init if stopVideo was called before the API has loaded', () => {
+      testComponent.youtubePlayer.stopVideo();
+      expect(testComponent.youtubePlayer.getPlayerState()).toBe(YT.PlayerState.CUED);
+
+      events.onReady({target: playerSpy});
+
+      expect(playerSpy.stopVideo).toHaveBeenCalled();
+    });
+
+    it('should set the playback rate on init if setPlaybackRate was called before ' +
+      'the API has loaded', () => {
+        testComponent.youtubePlayer.setPlaybackRate(1337);
+        expect(testComponent.youtubePlayer.getPlaybackRate()).toBe(1337);
+
+        events.onReady({target: playerSpy});
+
+        expect(playerSpy.setPlaybackRate).toHaveBeenCalledWith(1337);
+      });
+
+    it('should set the volume on init if setVolume was called before the API has loaded', () => {
+      testComponent.youtubePlayer.setVolume(37);
+      expect(testComponent.youtubePlayer.getVolume()).toBe(37);
+
+      events.onReady({target: playerSpy});
+
+      expect(playerSpy.setVolume).toHaveBeenCalledWith(37);
+    });
+
+    it('should mute on init if mute was called before the API has loaded', () => {
+      testComponent.youtubePlayer.mute();
+      expect(testComponent.youtubePlayer.isMuted()).toBe(true);
+
+      events.onReady({target: playerSpy});
+
+      expect(playerSpy.mute).toHaveBeenCalled();
+    });
+
+    it('should unmute on init if umMute was called before the API has loaded', () => {
+      testComponent.youtubePlayer.unMute();
+      expect(testComponent.youtubePlayer.isMuted()).toBe(false);
+
+      events.onReady({target: playerSpy});
+
+      expect(playerSpy.unMute).toHaveBeenCalled();
+    });
+
+    it('should seek on init if seekTo was called before the API has loaded', () => {
+      testComponent.youtubePlayer.seekTo(1337, true);
+      expect(testComponent.youtubePlayer.getCurrentTime()).toBe(1337);
+
+      events.onReady({target: playerSpy});
+
+      expect(playerSpy.seekTo).toHaveBeenCalledWith(1337, true);
+    });
+
   });
 
   describe('API loaded asynchronously', () => {
@@ -326,6 +401,59 @@ describe('YoutubePlayer', () => {
     });
   });
 
+  it('should pick up static startSeconds and endSeconds values', () => {
+    const staticSecondsApp = TestBed.createComponent(StaticStartEndSecondsApp);
+    staticSecondsApp.detectChanges();
+
+    playerSpy.getPlayerState.and.returnValue(window.YT!.PlayerState.CUED);
+    events.onReady({target: playerSpy});
+
+    expect(playerSpy.cueVideoById).toHaveBeenCalledWith(
+      jasmine.objectContaining({startSeconds: 42, endSeconds: 1337}));
+  });
+
+  it('should be able to subscribe to events after initialization', () => {
+    const noEventsApp = TestBed.createComponent(NoEventsApp);
+    noEventsApp.detectChanges();
+    events.onReady({target: playerSpy});
+    noEventsApp.detectChanges();
+
+    const player = noEventsApp.componentInstance.player;
+    const subscriptions: Subscription[] = [];
+    const readySpy = jasmine.createSpy('ready spy');
+    const stateChangeSpy = jasmine.createSpy('stateChange spy');
+    const playbackQualityChangeSpy = jasmine.createSpy('playbackQualityChange spy');
+    const playbackRateChangeSpy = jasmine.createSpy('playbackRateChange spy');
+    const errorSpy = jasmine.createSpy('error spy');
+    const apiChangeSpy = jasmine.createSpy('apiChange spy');
+
+    subscriptions.push(player.ready.subscribe(readySpy));
+    events.onReady({target: playerSpy});
+    expect(readySpy).toHaveBeenCalledWith({target: playerSpy});
+
+    subscriptions.push(player.stateChange.subscribe(stateChangeSpy));
+    events.onStateChange({target: playerSpy, data: 5});
+    expect(stateChangeSpy).toHaveBeenCalledWith({target: playerSpy, data: 5});
+
+    subscriptions.push(player.playbackQualityChange.subscribe(playbackQualityChangeSpy));
+    events.onPlaybackQualityChange({target: playerSpy, data: 'large'});
+    expect(playbackQualityChangeSpy).toHaveBeenCalledWith({target: playerSpy, data: 'large'});
+
+    subscriptions.push(player.playbackRateChange.subscribe(playbackRateChangeSpy));
+    events.onPlaybackRateChange({target: playerSpy, data: 2});
+    expect(playbackRateChangeSpy).toHaveBeenCalledWith({target: playerSpy, data: 2});
+
+    subscriptions.push(player.error.subscribe(errorSpy));
+    events.onError({target: playerSpy, data: 5});
+    expect(errorSpy).toHaveBeenCalledWith({target: playerSpy, data: 5});
+
+    subscriptions.push(player.apiChange.subscribe(apiChangeSpy));
+    events.onApiChange({target: playerSpy});
+    expect(apiChangeSpy).toHaveBeenCalledWith({target: playerSpy});
+
+    subscriptions.forEach(subscription => subscription.unsubscribe());
+  });
+
 });
 
 /** Test component that contains a YouTubePlayer. */
@@ -358,4 +486,23 @@ class TestApp {
   onError = jasmine.createSpy('onError');
   onApiChange = jasmine.createSpy('onApiChange');
   @ViewChild('player') youtubePlayer: YouTubePlayer;
+}
+
+
+@Component({
+  template: `
+    <youtube-player [videoId]="videoId" [startSeconds]="42" [endSeconds]="1337"></youtube-player>
+  `
+})
+class StaticStartEndSecondsApp {
+  videoId = VIDEO_ID;
+}
+
+
+@Component({
+  template: `<youtube-player [videoId]="videoId"></youtube-player>`
+})
+class NoEventsApp {
+  @ViewChild(YouTubePlayer) player: YouTubePlayer;
+  videoId = VIDEO_ID;
 }

@@ -30,10 +30,22 @@ describe('Chip Remove', () => {
   }));
 
   describe('basic behavior', () => {
-    it('should applies the `mat-chip-remove` CSS class', () => {
+    it('should apply the `mat-chip-remove` CSS class', () => {
       let buttonElement = chipNativeElement.querySelector('button')!;
 
       expect(buttonElement.classList).toContain('mat-chip-remove');
+    });
+
+    it('should ensure that the button cannot submit its parent form', () => {
+      const buttonElement = chipNativeElement.querySelector('button')!;
+
+      expect(buttonElement.getAttribute('type')).toBe('button');
+    });
+
+    it('should not set the `type` attribute on non-button elements', () => {
+      const buttonElement = chipNativeElement.querySelector('span.mat-chip-remove')!;
+
+      expect(buttonElement.hasAttribute('type')).toBe(false);
     });
 
     it('should emits (removed) on click', () => {
@@ -73,7 +85,10 @@ describe('Chip Remove', () => {
     <mat-chip
       [removable]="removable"
       [disabled]="disabled"
-      (removed)="didRemove()"><button matChipRemove></button></mat-chip>
+      (removed)="didRemove()">
+      <button matChipRemove></button>
+      <span matChipRemove></span>
+    </mat-chip>
   `
 })
 class TestChip {

@@ -12,25 +12,32 @@ import {ModifierKeys} from '@angular/cdk/testing';
  * Creates a browser MouseEvent with the specified options.
  * @docs-private
  */
-export function createMouseEvent(type: string, x = 0, y = 0, button = 0) {
+export function createMouseEvent(type: string, clientX = 0, clientY = 0, button = 0) {
   const event = document.createEvent('MouseEvent');
-  const originalPreventDefault = event.preventDefault;
+  const originalPreventDefault = event.preventDefault.bind(event);
+
+  // Note: We cannot determine the position of the mouse event based on the screen
+  // because the dimensions and position of the browser window are not available
+  // To provide reasonable `screenX` and `screenY` coordinates, we simply use the
+  // client coordinates as if the browser is opened in fullscreen.
+  const screenX = clientX;
+  const screenY = clientY;
 
   event.initMouseEvent(type,
-    true, /* canBubble */
-    true, /* cancelable */
-    window, /* view */
-    0, /* detail */
-    x, /* screenX */
-    y, /* screenY */
-    x, /* clientX */
-    y, /* clientY */
-    false, /* ctrlKey */
-    false, /* altKey */
-    false, /* shiftKey */
-    false, /* metaKey */
-    button, /* button */
-    null /* relatedTarget */);
+    /* canBubble */ true,
+    /* cancelable */ true,
+    /* view */ window,
+    /* detail */ 0,
+    /* screenX */ screenX,
+    /* screenY */ screenY,
+    /* clientX */ clientX,
+    /* clientY */ clientY,
+    /* ctrlKey */ false,
+    /* altKey */ false,
+    /* shiftKey */ false,
+    /* metaKey */ false,
+    /* button */ button,
+    /* relatedTarget */ null);
 
   // `initMouseEvent` doesn't allow us to pass the `buttons` and
   // defaults it to 0 which looks like a fake event.
@@ -39,10 +46,32 @@ export function createMouseEvent(type: string, x = 0, y = 0, button = 0) {
   // IE won't set `defaultPrevented` on synthetic events so we need to do it manually.
   event.preventDefault = function() {
     Object.defineProperty(event, 'defaultPrevented', { get: () => true });
-    return originalPreventDefault.apply(this, arguments);
+    return originalPreventDefault();
   };
 
   return event;
+}
+
+/**
+ * Creates a browser `PointerEvent` with the specified options. Pointer events
+ * by default will appear as if they are the primary pointer of their type.
+ * https://www.w3.org/TR/pointerevents2/#dom-pointerevent-isprimary.
+ *
+ * For example, if pointer events for a multi-touch interaction are created, the non-primary
+ * pointer touches would need to be represented by non-primary pointer events.
+ *
+ * @docs-private
+ */
+export function createPointerEvent(type: string, clientX = 0, clientY = 0,
+                                   options: PointerEventInit = {isPrimary: true}) {
+  return new PointerEvent(type, {
+    bubbles: true,
+    cancelable: true,
+    view: window,
+    clientX,
+    clientY,
+    ...options,
+  });
 }
 
 /**
@@ -85,8 +114,24 @@ export function createKeyboardEvent(type: string, keyCode: number = 0, key: stri
   } else {
     // `initKeyboardEvent` expects to receive modifiers as a whitespace-delimited string
     // See https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/initKeyboardEvent
-    const modifiersStr = (modifiers.control ? 'Control ' : '' + modifiers.alt ? 'Alt ' : '' +
-        modifiers.shift ? 'Shift ' : '' + modifiers.meta ? 'Meta' : '').trim();
+    let modifiersList = '';
+
+    if (modifiers.control) {
+      modifiersList += 'Control ';
+    }
+
+    if (modifiers.alt) {
+      modifiersList += 'Alt ';
+    }
+
+    if (modifiers.shift) {
+      modifiersList += 'Shift ';
+    }
+
+    if (modifiers.meta) {
+      modifiersList += 'Meta ';
+    }
+
     event.initKeyboardEvent(type,
         true, /* canBubble */
         true, /* cancelable */
@@ -94,7 +139,7 @@ export function createKeyboardEvent(type: string, keyCode: number = 0, key: stri
         0, /* char */
         key, /* key */
         0, /* location */
-        modifiersStr, /* modifiersList */
+        modifiersList.trim(), /* modifiersList */
         false /* repeat */);
   }
 

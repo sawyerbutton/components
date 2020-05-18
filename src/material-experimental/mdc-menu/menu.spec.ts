@@ -188,6 +188,28 @@ describe('MDC-based MatMenu', () => {
     expect(document.activeElement).not.toBe(triggerEl);
   }));
 
+  it('should be able to move focus in the closed event', fakeAsync(() => {
+    const fixture = createComponent(SimpleMenu, [], [FakeIcon]);
+    const instance = fixture.componentInstance;
+    fixture.detectChanges();
+    const triggerEl = instance.triggerEl.nativeElement;
+    const button = document.createElement('button');
+    button.setAttribute('tabindex', '0');
+    document.body.appendChild(button);
+
+    triggerEl.click();
+    fixture.detectChanges();
+
+    const subscription = instance.trigger.menuClosed.subscribe(() => button.focus());
+    instance.trigger.closeMenu();
+    fixture.detectChanges();
+    tick(500);
+
+    expect(document.activeElement).toBe(button);
+    document.body.removeChild(button);
+    subscription.unsubscribe();
+  }));
+
   it('should restore focus to the trigger immediately once the menu is closed', () => {
     const fixture = createComponent(SimpleMenu, [], [FakeIcon]);
     fixture.detectChanges();
@@ -501,6 +523,38 @@ describe('MDC-based MatMenu', () => {
 
     const role = menuPanel ? menuPanel.getAttribute('role') : '';
     expect(role).toBe('menu', 'Expected panel to have the "menu" role.');
+  });
+
+  it('should forward ARIA attributes to the menu panel', () => {
+    const fixture = createComponent(SimpleMenu, [], [FakeIcon]);
+    const instance = fixture.componentInstance;
+    fixture.detectChanges();
+    instance.trigger.openMenu();
+    fixture.detectChanges();
+
+    const menuPanel = overlayContainerElement.querySelector('.mat-mdc-menu-panel')!;
+    expect(menuPanel.hasAttribute('aria-label')).toBe(false);
+    expect(menuPanel.hasAttribute('aria-labelledby')).toBe(false);
+    expect(menuPanel.hasAttribute('aria-describedby')).toBe(false);
+
+    // Note that setting all of these at the same time is invalid,
+    // but it's up to the consumer to handle it correctly.
+    instance.ariaLabel = 'Custom aria-label';
+    instance.ariaLabelledby = 'custom-labelled-by';
+    instance.ariaDescribedby = 'custom-described-by';
+    fixture.detectChanges();
+
+    expect(menuPanel.getAttribute('aria-label')).toBe('Custom aria-label');
+    expect(menuPanel.getAttribute('aria-labelledby')).toBe('custom-labelled-by');
+    expect(menuPanel.getAttribute('aria-describedby')).toBe('custom-described-by');
+
+    // Change these to empty strings to make sure that we don't preserve empty attributes.
+    instance.ariaLabel = instance.ariaLabelledby = instance.ariaDescribedby = '';
+    fixture.detectChanges();
+
+    expect(menuPanel.hasAttribute('aria-label')).toBe(false);
+    expect(menuPanel.hasAttribute('aria-labelledby')).toBe(false);
+    expect(menuPanel.hasAttribute('aria-describedby')).toBe(false);
   });
 
   it('should set the "menuitem" role on the items by default', () => {
@@ -1981,7 +2035,7 @@ describe('MDC-based MatMenu', () => {
       Object.defineProperty(event, 'buttons', {get: () => 1});
       event.preventDefault = jasmine.createSpy('preventDefault spy');
 
-      dispatchMouseEvent(overlay.querySelector('[mat-menu-item]')!, 'mousedown', 0, 0, event);
+      dispatchEvent(overlay.querySelector('[mat-menu-item]')!, event);
       expect(event.preventDefault).toHaveBeenCalled();
     });
 
@@ -2128,6 +2182,18 @@ describe('MDC-based MatMenu', () => {
 
   });
 
+  it('should have a focus indicator', () => {
+    const fixture = createComponent(SimpleMenu, [], [FakeIcon]);
+    fixture.detectChanges();
+    fixture.componentInstance.trigger.openMenu();
+    fixture.detectChanges();
+    const menuItemNativeElements =
+        Array.from(overlayContainerElement.querySelectorAll('.mat-mdc-menu-item'));
+
+    expect(menuItemNativeElements
+        .every(element => element.classList.contains('mat-mdc-focus-indicator'))).toBe(true);
+  });
+
 });
 
 describe('MatMenu default overrides', () => {
@@ -2163,7 +2229,10 @@ describe('MatMenu default overrides', () => {
       #menu="matMenu"
       [class]="panelClass"
       (closed)="closeCallback($event)"
-      [backdropClass]="backdropClass">
+      [backdropClass]="backdropClass"
+      [aria-label]="ariaLabel"
+      [aria-labelledby]="ariaLabelledby"
+      [aria-describedby]="ariaDescribedby">
 
       <button mat-menu-item> Item </button>
       <button mat-menu-item disabled> Disabled </button>
@@ -2185,6 +2254,9 @@ class SimpleMenu {
   backdropClass: string;
   panelClass: string;
   restoreFocus = true;
+  ariaLabel: string;
+  ariaLabelledby: string;
+  ariaDescribedby: string;
 }
 
 @Component({

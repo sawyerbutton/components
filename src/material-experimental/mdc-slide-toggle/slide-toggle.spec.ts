@@ -13,6 +13,7 @@ describe('MDC-based MatSlideToggle without forms', () => {
       imports: [MatSlideToggleModule, BidiModule],
       declarations: [
         SlideToggleBasic,
+        SlideToggleCheckedAndDisabledAttr,
         SlideToggleWithTabindexAttr,
         SlideToggleWithoutLabel,
         SlideToggleProjectedLabel,
@@ -155,7 +156,7 @@ describe('MDC-based MatSlideToggle without forms', () => {
       fixture.detectChanges();
 
       // Once the id binding is set to null, the id property should auto-generate a unique id.
-      expect(inputElement.id).toMatch(/mat-slide-toggle-\d+-input/);
+      expect(inputElement.id).toMatch(/mat-mdc-slide-toggle-\d+-input/);
     });
 
     it('should forward the tabIndex to the underlying input', () => {
@@ -296,6 +297,11 @@ describe('MDC-based MatSlideToggle without forms', () => {
 
       expect(slideToggleElement.querySelectorAll(rippleSelector).length).toBe(0);
     });
+
+    it('should have a focus indicator', () => {
+      const underlayElement = slideToggleElement.querySelector('.mdc-switch__thumb-underlay')!;
+      expect(underlayElement.classList.contains('mat-mdc-focus-indicator')).toBe(true);
+    });
   });
 
   describe('custom template', () => {
@@ -319,6 +325,22 @@ describe('MDC-based MatSlideToggle without forms', () => {
       expect(slideToggle.tabIndex)
         .toBe(5, 'Expected tabIndex property to have been set based on the native attribute');
     }));
+
+    it('should add the disabled class if disabled through attribute', () => {
+      const fixture = TestBed.createComponent(SlideToggleCheckedAndDisabledAttr);
+      fixture.detectChanges();
+
+      const switchEl = fixture.nativeElement.querySelector('.mdc-switch');
+      expect(switchEl.classList).toContain('mdc-switch--disabled');
+    });
+
+    it('should add the checked class if checked through attribute', () => {
+      const fixture = TestBed.createComponent(SlideToggleCheckedAndDisabledAttr);
+      fixture.detectChanges();
+
+      const switchEl = fixture.nativeElement.querySelector('.mdc-switch');
+      expect(switchEl.classList).toContain('mdc-switch--checked');
+    });
 
     it('should remove the tabindex from the host element', fakeAsync(() => {
       const fixture = TestBed.createComponent(SlideToggleWithTabindexAttr);
@@ -771,6 +793,11 @@ class SlideToggleWithModel {
   isChecked = false;
   isDisabled = false;
 }
+
+@Component({
+  template: `<mat-slide-toggle checked disabled>Label</mat-slide-toggle>`
+})
+class SlideToggleCheckedAndDisabledAttr {}
 
 @Component({
   template: `

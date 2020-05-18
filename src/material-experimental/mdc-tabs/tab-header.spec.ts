@@ -7,6 +7,7 @@ import {
   dispatchKeyboardEvent,
   createKeyboardEvent,
   dispatchEvent,
+  createMouseEvent,
 } from '@angular/cdk/testing/private';
 import {CommonModule} from '@angular/common';
 import {Component, ViewChild} from '@angular/core';
@@ -145,6 +146,19 @@ describe('MDC-based MatTabHeader', () => {
       fixture.detectChanges();
       expect(appComponent.selectedIndex).toBe(0);
       expect(spaceEvent.defaultPrevented).toBe(true);
+    });
+
+    it('should not prevent the default space/enter action if the current is selected', () => {
+      appComponent.tabHeader.focusIndex = appComponent.tabHeader.selectedIndex = 0;
+      fixture.detectChanges();
+
+      const spaceEvent = dispatchKeyboardEvent(tabListContainer, 'keydown', SPACE);
+      fixture.detectChanges();
+      expect(spaceEvent.defaultPrevented).toBe(false);
+
+      const enterEvent = dispatchKeyboardEvent(tabListContainer, 'keydown', ENTER);
+      fixture.detectChanges();
+      expect(enterEvent.defaultPrevented).toBe(false);
     });
 
     it('should move focus to the first tab when pressing HOME', () => {
@@ -456,6 +470,16 @@ describe('MDC-based MatTabHeader', () => {
         tick(100);
 
         expect(header.scrollDistance).toBe(previousDistance);
+      }));
+
+      it('should not scroll when pressing the right mouse button', fakeAsync(() => {
+        expect(header.scrollDistance).toBe(0, 'Expected to start off not scrolled.');
+
+        dispatchEvent(nextButton, createMouseEvent('mousedown', undefined, undefined, 2));
+        fixture.detectChanges();
+        tick(3000);
+
+        expect(header.scrollDistance).toBe(0, 'Expected not to have scrolled after a while.');
       }));
 
       /**

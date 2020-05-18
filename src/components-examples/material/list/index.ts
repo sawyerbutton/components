@@ -5,17 +5,20 @@ import {MatListModule} from '@angular/material/list';
 import {ListOverviewExample} from './list-overview/list-overview-example';
 import {ListSectionsExample} from './list-sections/list-sections-example';
 import {ListSelectionExample} from './list-selection/list-selection-example';
+import {ListSingleSelectionExample} from './list-single-selection/list-single-selection-example';
 
 export {
   ListOverviewExample,
   ListSectionsExample,
   ListSelectionExample,
+  ListSingleSelectionExample,
 };
 
 const EXAMPLES = [
   ListOverviewExample,
   ListSectionsExample,
   ListSelectionExample,
+  ListSingleSelectionExample,
 ];
 
 @NgModule({
@@ -26,6 +29,7 @@ const EXAMPLES = [
   ],
   declarations: EXAMPLES,
   exports: EXAMPLES,
+  entryComponents: EXAMPLES,
 })
 export class ListExamplesModule {
 }

@@ -7,15 +7,15 @@ export declare const MAT_EXPANSION_PANEL_DEFAULT_OPTIONS: InjectionToken<MatExpa
 export declare class MatAccordion extends CdkAccordion implements MatAccordionBase, AfterContentInit {
     _headers: QueryList<MatExpansionPanelHeader>;
     displayMode: MatAccordionDisplayMode;
-    hideToggle: boolean;
+    get hideToggle(): boolean;
+    set hideToggle(show: boolean);
     togglePosition: MatAccordionTogglePosition;
     _handleHeaderFocus(header: MatExpansionPanelHeader): void;
     _handleHeaderKeydown(event: KeyboardEvent): void;
     ngAfterContentInit(): void;
     static ngAcceptInputType_hideToggle: BooleanInput;
-    static ngAcceptInputType_multi: BooleanInput;
-    static ɵdir: i0.ɵɵDirectiveDefWithMeta<MatAccordion, "mat-accordion", ["matAccordion"], { 'multi': "multi", 'hideToggle': "hideToggle", 'displayMode': "displayMode", 'togglePosition': "togglePosition" }, {}, ["_headers"]>;
-    static ɵfac: i0.ɵɵFactoryDef<MatAccordion>;
+    static ɵdir: i0.ɵɵDirectiveDefWithMeta<MatAccordion, "mat-accordion", ["matAccordion"], { "multi": "multi"; "hideToggle": "hideToggle"; "displayMode": "displayMode"; "togglePosition": "togglePosition"; }, {}, ["_headers"]>;
+    static ɵfac: i0.ɵɵFactoryDef<MatAccordion, never>;
 }
 
 export interface MatAccordionBase extends CdkAccordion {
@@ -32,7 +32,6 @@ export declare type MatAccordionTogglePosition = 'before' | 'after';
 
 export declare const matExpansionAnimations: {
     readonly indicatorRotate: AnimationTriggerMetadata;
-    readonly expansionHeaderHeight: AnimationTriggerMetadata;
     readonly bodyExpansion: AnimationTriggerMetadata;
 };
 
@@ -52,32 +51,37 @@ export declare class MatExpansionPanel extends CdkAccordionItem implements After
     accordion: MatAccordionBase;
     afterCollapse: EventEmitter<void>;
     afterExpand: EventEmitter<void>;
-    hideToggle: boolean;
-    togglePosition: MatAccordionTogglePosition;
+    get hideToggle(): boolean;
+    set hideToggle(value: boolean);
+    get togglePosition(): MatAccordionTogglePosition;
+    set togglePosition(value: MatAccordionTogglePosition);
     constructor(accordion: MatAccordionBase, _changeDetectorRef: ChangeDetectorRef, _uniqueSelectionDispatcher: UniqueSelectionDispatcher, _viewContainerRef: ViewContainerRef, _document: any, _animationMode: string, defaultOptions?: MatExpansionPanelDefaultOptions);
     _containsFocus(): boolean;
     _getExpandedState(): MatExpansionPanelState;
     _hasSpacing(): boolean;
+    close(): void;
     ngAfterContentInit(): void;
     ngOnChanges(changes: SimpleChanges): void;
     ngOnDestroy(): void;
+    open(): void;
+    toggle(): void;
     static ngAcceptInputType_disabled: BooleanInput;
     static ngAcceptInputType_expanded: BooleanInput;
     static ngAcceptInputType_hideToggle: BooleanInput;
-    static ɵcmp: i0.ɵɵComponentDefWithMeta<MatExpansionPanel, "mat-expansion-panel", ["matExpansionPanel"], { 'disabled': "disabled", 'expanded': "expanded", 'hideToggle': "hideToggle", 'togglePosition': "togglePosition" }, { 'opened': "opened", 'closed': "closed", 'expandedChange': "expandedChange", 'afterExpand': "afterExpand", 'afterCollapse': "afterCollapse" }, ["_lazyContent"]>;
-    static ɵfac: i0.ɵɵFactoryDef<MatExpansionPanel>;
+    static ɵcmp: i0.ɵɵComponentDefWithMeta<MatExpansionPanel, "mat-expansion-panel", ["matExpansionPanel"], { "disabled": "disabled"; "expanded": "expanded"; "hideToggle": "hideToggle"; "togglePosition": "togglePosition"; }, { "opened": "opened"; "closed": "closed"; "expandedChange": "expandedChange"; "afterExpand": "afterExpand"; "afterCollapse": "afterCollapse"; }, ["_lazyContent"], ["mat-expansion-panel-header", "*", "mat-action-row"]>;
+    static ɵfac: i0.ɵɵFactoryDef<MatExpansionPanel, [{ optional: true; skipSelf: true; }, null, null, null, null, { optional: true; }, { optional: true; }]>;
 }
 
 export declare class MatExpansionPanelActionRow {
     static ɵdir: i0.ɵɵDirectiveDefWithMeta<MatExpansionPanelActionRow, "mat-action-row", never, {}, {}, never>;
-    static ɵfac: i0.ɵɵFactoryDef<MatExpansionPanelActionRow>;
+    static ɵfac: i0.ɵɵFactoryDef<MatExpansionPanelActionRow, never>;
 }
 
 export declare class MatExpansionPanelContent {
     _template: TemplateRef<any>;
     constructor(_template: TemplateRef<any>);
     static ɵdir: i0.ɵɵDirectiveDefWithMeta<MatExpansionPanelContent, "ng-template[matExpansionPanelContent]", never, {}, {}, never>;
-    static ɵfac: i0.ɵɵFactoryDef<MatExpansionPanelContent>;
+    static ɵfac: i0.ɵɵFactoryDef<MatExpansionPanelContent, never>;
 }
 
 export interface MatExpansionPanelDefaultOptions {
@@ -88,18 +92,17 @@ export interface MatExpansionPanelDefaultOptions {
 
 export declare class MatExpansionPanelDescription {
     static ɵdir: i0.ɵɵDirectiveDefWithMeta<MatExpansionPanelDescription, "mat-panel-description", never, {}, {}, never>;
-    static ɵfac: i0.ɵɵFactoryDef<MatExpansionPanelDescription>;
+    static ɵfac: i0.ɵɵFactoryDef<MatExpansionPanelDescription, never>;
 }
 
 export declare class MatExpansionPanelHeader implements OnDestroy, FocusableOption {
-    _animationsDisabled: boolean;
     collapsedHeight: string;
-    readonly disabled: any;
+    get disabled(): any;
     expandedHeight: string;
     panel: MatExpansionPanel;
     constructor(panel: MatExpansionPanel, _element: ElementRef, _focusMonitor: FocusMonitor, _changeDetectorRef: ChangeDetectorRef, defaultOptions?: MatExpansionPanelDefaultOptions);
-    _animationStarted(): void;
     _getExpandedState(): string;
+    _getHeaderHeight(): string | null;
     _getPanelId(): string;
     _getTogglePosition(): MatAccordionTogglePosition;
     _isExpanded(): boolean;
@@ -108,13 +111,13 @@ export declare class MatExpansionPanelHeader implements OnDestroy, FocusableOpti
     _toggle(): void;
     focus(origin?: FocusOrigin, options?: FocusOptions): void;
     ngOnDestroy(): void;
-    static ɵcmp: i0.ɵɵComponentDefWithMeta<MatExpansionPanelHeader, "mat-expansion-panel-header", never, { 'expandedHeight': "expandedHeight", 'collapsedHeight': "collapsedHeight" }, {}, never>;
-    static ɵfac: i0.ɵɵFactoryDef<MatExpansionPanelHeader>;
+    static ɵcmp: i0.ɵɵComponentDefWithMeta<MatExpansionPanelHeader, "mat-expansion-panel-header", never, { "expandedHeight": "expandedHeight"; "collapsedHeight": "collapsedHeight"; }, {}, never, ["mat-panel-title", "mat-panel-description", "*"]>;
+    static ɵfac: i0.ɵɵFactoryDef<MatExpansionPanelHeader, [{ host: true; }, null, null, null, { optional: true; }]>;
 }
 
 export declare type MatExpansionPanelState = 'expanded' | 'collapsed';
 
 export declare class MatExpansionPanelTitle {
     static ɵdir: i0.ɵɵDirectiveDefWithMeta<MatExpansionPanelTitle, "mat-panel-title", never, {}, {}, never>;
-    static ɵfac: i0.ɵɵFactoryDef<MatExpansionPanelTitle>;
+    static ɵfac: i0.ɵɵFactoryDef<MatExpansionPanelTitle, never>;
 }

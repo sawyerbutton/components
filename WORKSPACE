@@ -8,24 +8,28 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 # Add NodeJS rules
 http_archive(
     name = "build_bazel_rules_nodejs",
-    sha256 = "a54b2511d6dae42c1f7cdaeb08144ee2808193a088004fc3b464a04583d5aa2e",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/0.42.3/rules_nodejs-0.42.3.tar.gz"],
+    sha256 = "d14076339deb08e5460c221fae5c5e9605d2ef4848eee1f0c81c9ffdc1ab31c1",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/1.6.1/rules_nodejs-1.6.1.tar.gz"],
 )
 
 # Add sass rules
 http_archive(
     name = "io_bazel_rules_sass",
-    sha256 = "ad08e8c82aa1f48b72dc295cb83bba33f514cdf24cc7b0e21e9353f20f0dc147",
-    strip_prefix = "rules_sass-5d1b26f8cd12c5d75dd359f9291090b341e8fd52",
-    # We need to use a version that includes SHA 5d1b26f8cd12c5d75dd359f9291090b341e8fd52 of
-    # the "rules_sass" repository as it adds support for workers.
-    url = "https://github.com/bazelbuild/rules_sass/archive/5d1b26f8cd12c5d75dd359f9291090b341e8fd52.zip",
+    # Patch `rules_sass` to work around a bug that causes error messages to be not
+    # printed in worker mode: https://github.com/bazelbuild/rules_sass/issues/96.
+    # TODO(devversion): remove this patch once the Sass Node entry-point returns a `Promise`.
+    patches = ["//tools/postinstall:sass_worker_async.patch"],
+    sha256 = "c78be58f5e0a29a04686b628cf54faaee0094322ae0ac99da5a8a8afca59a647",
+    strip_prefix = "rules_sass-1.25.0",
+    urls = [
+        "https://github.com/bazelbuild/rules_sass/archive/1.25.0.zip",
+    ],
 )
 
-load("@build_bazel_rules_nodejs//:defs.bzl", "check_bazel_version", "node_repositories", "yarn_install")
+load("@build_bazel_rules_nodejs//:index.bzl", "check_bazel_version", "node_repositories", "yarn_install")
 
-# The minimum bazel version to use with this repo is v1.1.0.
-check_bazel_version("1.1.0")
+# The minimum bazel version to use with this repo is v3.1.0.
+check_bazel_version("3.0.0")
 
 node_repositories(
     node_repositories = {
@@ -34,21 +38,29 @@ node_repositories(
         "12.9.1-windows_amd64": ("node-v12.9.1-win-x64.zip", "node-v12.9.1-win-x64", "6a4e54bda091bd02dbd8ff1b9f6671e036297da012a53891e3834d4bf4bed297"),
     },
     node_urls = ["https://nodejs.org/dist/v{version}/{filename}"],
-    # For deterministic builds, specify explicit NodeJS and Yarn versions.
     node_version = "12.9.1",
-    yarn_repositories = {
-        "1.19.1": ("yarn-v1.19.1.tar.gz", "yarn-v1.19.1", "34293da6266f2aae9690d59c2d764056053ff7eebc56b80b8df05010c3da9343"),
-    },
-    yarn_urls = ["https://github.com/yarnpkg/yarn/releases/download/v{version}/{filename}"],
-    yarn_version = "1.19.1",
+    # We do not need to define a specific yarn version as bazel will respect the .yarnrc file
+    # and run the version of yarn defined at the set-path value.
+    # Since bazel runs yarn from the working directory of the package.json, and our .yarnrc
+    # file is in the same directory, it correctly discovers and respects it.  Additionally,
+    # it ensures that the yarn environment variable to detect if yarn has already followed
+    # the set-path value is reset.
 )
 
 yarn_install(
     name = "npm",
-    # We add the postinstall patches file here so that Yarn will rerun whenever
-    # the patches script changes.
-    data = ["//:tools/bazel/postinstall-patches.js"],
+    # Redirects Yarn `stdout` output to `stderr`. This ensures that stdout is not accidentally
+    # polluted when Bazel runs Yarn. Workaround until the upstream fix is available:
+    # https://github.com/bazelbuild/bazel/pull/10611.
+    args = ["1>&2"],
+    # We add the postinstall patches file, and ngcc main fields update script here so
+    # that Yarn will rerun whenever one of these files has been modified.
+    data = [
+        "//:tools/postinstall/apply-patches.js",
+        "//:tools/postinstall/update-ngcc-main-fields.js",
+    ],
     package_json = "//:package.json",
+    quiet = False,
     yarn_lock = "//:yarn.lock",
 )
 
@@ -93,9 +105,9 @@ sass_repositories()
 # Bring in bazel_toolchains for RBE setup configuration.
 http_archive(
     name = "bazel_toolchains",
-    sha256 = "3c1299efcf64a4ecf4f6def7564db28879ad2870632144d77932e7910686d3f3",
-    strip_prefix = "bazel-toolchains-1.1.2",
-    url = "https://github.com/bazelbuild/bazel-toolchains/archive/1.1.2.tar.gz",
+    sha256 = "144290c4166bd67e76a54f96cd504ed86416ca3ca82030282760f0823c10be48",
+    strip_prefix = "bazel-toolchains-3.1.1",
+    url = "https://github.com/bazelbuild/bazel-toolchains/archive/3.1.1.tar.gz",
 )
 
 load("@bazel_toolchains//repositories:repositories.bzl", bazel_toolchains_repositories = "repositories")
@@ -109,8 +121,8 @@ rbe_autoconfig(
     # Need to specify a base container digest in order to ensure that we can use the checked-in
     # platform configurations for the "ubuntu16_04" image. Otherwise the autoconfig rule would
     # need to pull the image and run it in order determine the toolchain configuration.
-    # See: https://github.com/bazelbuild/bazel-toolchains/blob/master/rules/rbe_repo.bzl#L229
-    base_container_digest = "sha256:1ab40405810effefa0b2f45824d6d608634ccddbf06366760c341ef6fbead011",
+    # See: https://github.com/bazelbuild/bazel-toolchains/blob/master/configs/ubuntu16_04_clang/versions.bzl#L9
+    base_container_digest = "sha256:b516a2d69537cb40a7c6a7d92d0008abb29fba8725243772bdaf2c83f1be2272",
     digest = "sha256:0b8fa87db4b8e5366717a7164342a029d1348d2feea7ecc4b18c780bc2507059",
     registry = "marketplace.gcr.io",
     # We can't use the default "ubuntu16_04" RBE image provided by the autoconfig because we need

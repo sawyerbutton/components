@@ -13,7 +13,6 @@ import {
   DEFAULT_OPTIONS,
   DEFAULT_WIDTH,
   GoogleMap,
-  UpdatedGoogleMap
 } from './google-map';
 
 /** Represents boundaries of a map to be used in tests. */
@@ -32,7 +31,7 @@ const testPosition: google.maps.LatLngLiteral = {
 
 describe('GoogleMap', () => {
   let mapConstructorSpy: jasmine.Spy;
-  let mapSpy: jasmine.SpyObj<UpdatedGoogleMap>;
+  let mapSpy: jasmine.SpyObj<google.maps.Map>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -74,7 +73,10 @@ describe('GoogleMap', () => {
     const container = fixture.debugElement.query(By.css('div'))!;
     expect(container.nativeElement.style.height).toBe(DEFAULT_HEIGHT);
     expect(container.nativeElement.style.width).toBe(DEFAULT_WIDTH);
-    expect(mapConstructorSpy).toHaveBeenCalledWith(container.nativeElement, DEFAULT_OPTIONS);
+    expect(mapConstructorSpy).toHaveBeenCalledWith(container.nativeElement, {
+      ...DEFAULT_OPTIONS,
+      mapTypeId: undefined
+    });
   });
 
   it('sets height and width of the map', () => {
@@ -89,7 +91,10 @@ describe('GoogleMap', () => {
     const container = fixture.debugElement.query(By.css('div'))!;
     expect(container.nativeElement.style.height).toBe('750px');
     expect(container.nativeElement.style.width).toBe('400px');
-    expect(mapConstructorSpy).toHaveBeenCalledWith(container.nativeElement, DEFAULT_OPTIONS);
+    expect(mapConstructorSpy).toHaveBeenCalledWith(container.nativeElement, {
+      ...DEFAULT_OPTIONS,
+      mapTypeId: undefined
+    });
 
     fixture.componentInstance.height = '650px';
     fixture.componentInstance.width = '350px';
@@ -99,8 +104,30 @@ describe('GoogleMap', () => {
     expect(container.nativeElement.style.width).toBe('350px');
   });
 
+  it('should be able to set a number value as the width/height', () => {
+    mapSpy = createMapSpy(DEFAULT_OPTIONS);
+    mapConstructorSpy = createMapConstructorSpy(mapSpy);
+
+    const fixture = TestBed.createComponent(TestApp);
+    const instance = fixture.componentInstance;
+    instance.height = 750;
+    instance.width = 400;
+    fixture.detectChanges();
+
+    const container = fixture.debugElement.query(By.css('div'))!.nativeElement;
+    expect(container.style.height).toBe('750px');
+    expect(container.style.width).toBe('400px');
+
+    instance.height = '500';
+    instance.width = '600';
+    fixture.detectChanges();
+
+    expect(container.style.height).toBe('500px');
+    expect(container.style.width).toBe('600px');
+  });
+
   it('sets center and zoom of the map', () => {
-    const options = {center: {lat: 3, lng: 5}, zoom: 7};
+    const options = {center: {lat: 3, lng: 5}, zoom: 7, mapTypeId: undefined};
     mapSpy = createMapSpy(options);
     mapConstructorSpy = createMapConstructorSpy(mapSpy).and.callThrough();
 
@@ -121,7 +148,7 @@ describe('GoogleMap', () => {
   });
 
   it('sets map options', () => {
-    const options = {center: {lat: 3, lng: 5}, zoom: 7, draggable: false};
+    const options = {center: {lat: 3, lng: 5}, zoom: 7, draggable: false, mapTypeId: undefined};
     mapSpy = createMapSpy(options);
     mapConstructorSpy = createMapConstructorSpy(mapSpy).and.callThrough();
 
@@ -140,7 +167,12 @@ describe('GoogleMap', () => {
 
   it('gives precedence to center and zoom over options', () => {
     const inputOptions = {center: {lat: 3, lng: 5}, zoom: 7, heading: 170};
-    const correctedOptions = {center: {lat: 12, lng: 15}, zoom: 5, heading: 170};
+    const correctedOptions = {
+      center: {lat: 12, lng: 15},
+      zoom: 5,
+      heading: 170,
+      mapTypeId: undefined
+    };
     mapSpy = createMapSpy(correctedOptions);
     mapConstructorSpy = createMapConstructorSpy(mapSpy);
 
@@ -258,6 +290,23 @@ describe('GoogleMap', () => {
     expect(addSpy).toHaveBeenCalledWith('projection_changed', jasmine.any(Function));
     subscription.unsubscribe();
   });
+
+  it('should set the map type', () => {
+    mapSpy = createMapSpy(DEFAULT_OPTIONS);
+    mapConstructorSpy = createMapConstructorSpy(mapSpy).and.callThrough();
+
+    const fixture = TestBed.createComponent(TestApp);
+    fixture.componentInstance.mapTypeId = 'terrain' as unknown as google.maps.MapTypeId;
+    fixture.detectChanges();
+
+    expect(mapConstructorSpy).toHaveBeenCalledWith(jasmine.any(HTMLElement),
+      jasmine.objectContaining({mapTypeId: 'terrain'}));
+
+    fixture.componentInstance.mapTypeId = 'roadmap' as unknown as google.maps.MapTypeId;
+    fixture.detectChanges();
+
+    expect(mapSpy.setMapTypeId).toHaveBeenCalledWith('roadmap');
+  });
 });
 
 @Component({
@@ -267,6 +316,7 @@ describe('GoogleMap', () => {
                          [center]="center"
                          [zoom]="zoom"
                          [options]="options"
+                         [mapTypeId]="mapTypeId"
                          (mapClick)="handleClick($event)"
                          (centerChanged)="handleCenterChanged()"
                          (mapRightclick)="handleRightclick($event)">
@@ -274,11 +324,12 @@ describe('GoogleMap', () => {
 })
 class TestApp {
   @ViewChild(GoogleMap) map: GoogleMap;
-  height?: string;
-  width?: string;
+  height?: string | number;
+  width?: string | number;
   center?: google.maps.LatLngLiteral;
   zoom?: number;
   options?: google.maps.MapOptions;
+  mapTypeId?: google.maps.MapTypeId;
 
   handleClick(event: google.maps.MouseEvent) {}
   handleCenterChanged() {}

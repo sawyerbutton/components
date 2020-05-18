@@ -10,7 +10,7 @@ export declare class AutofillMonitor implements OnDestroy {
     ngOnDestroy(): void;
     stopMonitoring(element: Element): void;
     stopMonitoring(element: ElementRef<Element>): void;
-    static ɵfac: i0.ɵɵFactoryDef<AutofillMonitor>;
+    static ɵfac: i0.ɵɵFactoryDef<AutofillMonitor, never>;
     static ɵprov: i0.ɵɵInjectableDef<AutofillMonitor>;
 }
 
@@ -19,15 +19,20 @@ export declare class CdkAutofill implements OnDestroy, OnInit {
     constructor(_elementRef: ElementRef<HTMLElement>, _autofillMonitor: AutofillMonitor);
     ngOnDestroy(): void;
     ngOnInit(): void;
-    static ɵdir: i0.ɵɵDirectiveDefWithMeta<CdkAutofill, "[cdkAutofill]", never, {}, { 'cdkAutofill': "cdkAutofill" }, never>;
-    static ɵfac: i0.ɵɵFactoryDef<CdkAutofill>;
+    static ɵdir: i0.ɵɵDirectiveDefWithMeta<CdkAutofill, "[cdkAutofill]", never, {}, { "cdkAutofill": "cdkAutofill"; }, never>;
+    static ɵfac: i0.ɵɵFactoryDef<CdkAutofill, never>;
 }
 
 export declare class CdkTextareaAutosize implements AfterViewInit, DoCheck, OnDestroy {
-    enabled: boolean;
-    maxRows: number;
-    minRows: number;
-    constructor(_elementRef: ElementRef<HTMLElement>, _platform: Platform, _ngZone: NgZone);
+    protected _document?: Document;
+    get enabled(): boolean;
+    set enabled(value: boolean);
+    get maxRows(): number;
+    set maxRows(value: number);
+    get minRows(): number;
+    set minRows(value: number);
+    constructor(_elementRef: ElementRef<HTMLElement>, _platform: Platform, _ngZone: NgZone,
+    document?: any);
     _noopInputHandler(): void;
     _setMaxHeight(): void;
     _setMinHeight(): void;
@@ -39,8 +44,8 @@ export declare class CdkTextareaAutosize implements AfterViewInit, DoCheck, OnDe
     static ngAcceptInputType_enabled: BooleanInput;
     static ngAcceptInputType_maxRows: NumberInput;
     static ngAcceptInputType_minRows: NumberInput;
-    static ɵdir: i0.ɵɵDirectiveDefWithMeta<CdkTextareaAutosize, "textarea[cdkTextareaAutosize]", ["cdkTextareaAutosize"], { 'minRows': "cdkAutosizeMinRows", 'maxRows': "cdkAutosizeMaxRows", 'enabled': "cdkTextareaAutosize" }, {}, never>;
-    static ɵfac: i0.ɵɵFactoryDef<CdkTextareaAutosize>;
+    static ɵdir: i0.ɵɵDirectiveDefWithMeta<CdkTextareaAutosize, "textarea[cdkTextareaAutosize]", ["cdkTextareaAutosize"], { "minRows": "cdkAutosizeMinRows"; "maxRows": "cdkAutosizeMaxRows"; "enabled": "cdkTextareaAutosize"; }, {}, never>;
+    static ɵfac: i0.ɵɵFactoryDef<CdkTextareaAutosize, [null, null, null, { optional: true; }]>;
 }
 
 export declare class TextFieldModule {

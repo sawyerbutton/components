@@ -84,7 +84,7 @@ import {
   mixinErrorState,
   mixinTabIndex,
 } from '@angular/material/core';
-import {MatFormField, MatFormFieldControl} from '@angular/material/form-field';
+import {MAT_FORM_FIELD, MatFormField, MatFormFieldControl} from '@angular/material/form-field';
 import {defer, merge, Observable, Subject} from 'rxjs';
 import {
   distinctUntilChanged,
@@ -150,6 +150,18 @@ export function MAT_SELECT_SCROLL_STRATEGY_PROVIDER_FACTORY(overlay: Overlay):
     () => ScrollStrategy {
   return () => overlay.scrollStrategies.reposition();
 }
+
+/** Object that can be used to configure the default options for the select module. */
+export interface MatSelectConfig {
+  /** Whether option centering should be disabled. */
+  disableOptionCentering?: boolean;
+
+  /** Time to wait in milliseconds after the last keystroke before moving focus to an item. */
+  typeaheadDebounceInterval?: number;
+}
+
+/** Injection token that can be used to provide the default options the select module. */
+export const MAT_SELECT_CONFIG = new InjectionToken<MatSelectConfig>('MAT_SELECT_CONFIG');
 
 /** @docs-private */
 export const MAT_SELECT_SCROLL_STRATEGY_PROVIDER = {
@@ -503,11 +515,12 @@ export class MatSelect extends _MatSelectMixinBase implements AfterContentInit, 
     @Optional() private _dir: Directionality,
     @Optional() _parentForm: NgForm,
     @Optional() _parentFormGroup: FormGroupDirective,
-    @Optional() private _parentFormField: MatFormField,
+    @Optional() @Inject(MAT_FORM_FIELD) private _parentFormField: MatFormField,
     @Self() @Optional() public ngControl: NgControl,
     @Attribute('tabindex') tabIndex: string,
     @Inject(MAT_SELECT_SCROLL_STRATEGY) scrollStrategyFactory: any,
-    private _liveAnnouncer: LiveAnnouncer) {
+    private _liveAnnouncer: LiveAnnouncer,
+    @Optional() @Inject(MAT_SELECT_CONFIG) defaults?: MatSelectConfig) {
     super(elementRef, _defaultErrorStateMatcher, _parentForm,
           _parentFormGroup, ngControl);
 
@@ -523,6 +536,16 @@ export class MatSelect extends _MatSelectMixinBase implements AfterContentInit, 
 
     // Force setter to be called in case id was not specified.
     this.id = this.id;
+
+    if (defaults) {
+      if (defaults.disableOptionCentering != null) {
+        this.disableOptionCentering = defaults.disableOptionCentering;
+      }
+
+      if (defaults.typeaheadDebounceInterval != null) {
+        this.typeaheadDebounceInterval = defaults.typeaheadDebounceInterval;
+      }
+    }
   }
 
   ngOnInit() {
@@ -913,16 +936,18 @@ export class MatSelect extends _MatSelectMixinBase implements AfterContentInit, 
       .withAllowedModifierKeys(['shiftKey']);
 
     this._keyManager.tabOut.pipe(takeUntil(this._destroy)).subscribe(() => {
-      // Select the active item when tabbing away. This is consistent with how the native
-      // select behaves. Note that we only want to do this in single selection mode.
-      if (!this.multiple && this._keyManager.activeItem) {
-        this._keyManager.activeItem._selectViaInteraction();
-      }
+      if (this.panelOpen) {
+        // Select the active item when tabbing away. This is consistent with how the native
+        // select behaves. Note that we only want to do this in single selection mode.
+        if (!this.multiple && this._keyManager.activeItem) {
+          this._keyManager.activeItem._selectViaInteraction();
+        }
 
-      // Restore focus to the trigger before closing. Ensures that the focus
-      // position won't be lost if the user got focus into the overlay.
-      this.focus();
-      this.close();
+        // Restore focus to the trigger before closing. Ensures that the focus
+        // position won't be lost if the user got focus into the overlay.
+        this.focus();
+        this.close();
+      }
     });
 
     this._keyManager.change.pipe(takeUntil(this._destroy)).subscribe(() => {
@@ -1068,7 +1093,11 @@ export class MatSelect extends _MatSelectMixinBase implements AfterContentInit, 
   /** Gets the index of the provided option in the option list. */
   private _getOptionIndex(option: MatOption): number | undefined {
     return this.options.reduce((result: number | undefined, current: MatOption, index: number) => {
-      return result === undefined ? (option === current ? index : undefined) : result;
+      if (result !== undefined) {
+        return result;
+      }
+
+      return option === current ? index : undefined;
     }, undefined);
   }
 

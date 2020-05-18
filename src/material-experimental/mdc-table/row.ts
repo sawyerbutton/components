@@ -14,7 +14,8 @@ import {
   CdkHeaderRow,
   CdkHeaderRowDef,
   CdkRow,
-  CdkRowDef
+  CdkRowDef,
+  CdkNoDataRow
 } from '@angular/cdk/table';
 import {ChangeDetectionStrategy, Component, Directive, ViewEncapsulation} from '@angular/core';
 
@@ -62,7 +63,7 @@ export class MatRowDef<T> extends CdkRowDef<T> {
   selector: 'tr[mat-header-row]',
   template: CDK_ROW_TEMPLATE,
   host: {
-    'class': 'mat-mdc-header-row',
+    'class': 'mat-mdc-header-row mdc-data-table__header-row',
     'role': 'row',
   },
   // See note on CdkTable for explanation on why this uses the default change detection strategy.
@@ -80,7 +81,7 @@ export class MatHeaderRow extends CdkHeaderRow {
   selector: 'tr[mat-footer-row]',
   template: CDK_ROW_TEMPLATE,
   host: {
-    'class': 'mat-mdc-footer-row',
+    'class': 'mat-mdc-footer-row mdc-data-table__row',
     'role': 'row',
   },
   // See note on CdkTable for explanation on why this uses the default change detection strategy.
@@ -98,7 +99,7 @@ export class MatFooterRow extends CdkFooterRow {
   selector: 'tr[mat-row]',
   template: CDK_ROW_TEMPLATE,
   host: {
-    'class': 'mat-mdc-row',
+    'class': 'mat-mdc-row mdc-data-table__row',
     'role': 'row',
   },
   // See note on CdkTable for explanation on why this uses the default change detection strategy.
@@ -109,4 +110,12 @@ export class MatFooterRow extends CdkFooterRow {
   providers: [{provide: CdkRow, useExisting: MatRow}],
 })
 export class MatRow extends CdkRow {
+}
+
+/** Row that can be used to display a message when no data is shown in the table. */
+@Directive({
+  selector: 'ng-template[matNoDataRow]',
+  providers: [{provide: CdkNoDataRow, useExisting: MatNoDataRow}],
+})
+export class MatNoDataRow extends CdkNoDataRow {
 }

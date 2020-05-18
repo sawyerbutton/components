@@ -6,6 +6,7 @@
  * found in the LICENSE file at https://angular.io/license
  */
 
+import {DOCUMENT} from '@angular/common';
 import {FocusableOption} from '@angular/cdk/a11y';
 import {BooleanInput, coerceBooleanProperty} from '@angular/cdk/coercion';
 import {BACKSPACE, DELETE, SPACE} from '@angular/cdk/keycodes';
@@ -23,17 +24,18 @@ import {
   Optional,
   Output,
   ChangeDetectorRef,
+  Attribute,
 } from '@angular/core';
 import {
   CanColor,
   CanColorCtor,
-  CanDisable,
-  CanDisableCtor,
   CanDisableRipple,
   CanDisableRippleCtor,
+  HasTabIndex,
+  HasTabIndexCtor,
+  mixinTabIndex,
   MAT_RIPPLE_GLOBAL_OPTIONS,
   mixinColor,
-  mixinDisabled,
   mixinDisableRipple,
   RippleConfig,
   RippleGlobalOptions,
@@ -66,11 +68,13 @@ export class MatChipSelectionChange {
 // Boilerplate for applying mixins to MatChip.
 /** @docs-private */
 class MatChipBase {
+  disabled: boolean;
   constructor(public _elementRef: ElementRef) {}
 }
 
-const _MatChipMixinBase: CanColorCtor & CanDisableRippleCtor & CanDisableCtor & typeof MatChipBase =
-    mixinColor(mixinDisableRipple(mixinDisabled(MatChipBase)), 'primary');
+const _MatChipMixinBase: CanColorCtor & CanDisableRippleCtor &
+    HasTabIndexCtor & typeof MatChipBase =
+      mixinTabIndex(mixinColor(mixinDisableRipple(MatChipBase), 'primary'), -1);
 
 /**
  * Dummy directive to add CSS class to chip avatar.
@@ -97,11 +101,11 @@ export class MatChipTrailingIcon {}
  */
 @Directive({
   selector: `mat-basic-chip, [mat-basic-chip], mat-chip, [mat-chip]`,
-  inputs: ['color', 'disabled', 'disableRipple'],
+  inputs: ['color', 'disableRipple', 'tabIndex'],
   exportAs: 'matChip',
   host: {
-    'class': 'mat-chip',
-    '[attr.tabindex]': 'disabled ? null : -1',
+    'class': 'mat-chip mat-focus-indicator',
+    '[attr.tabindex]': 'disabled ? null : tabIndex',
     'role': 'option',
     '[class.mat-chip-selected]': 'selected',
     '[class.mat-chip-with-avatar]': 'avatar',
@@ -118,10 +122,17 @@ export class MatChipTrailingIcon {}
   },
 })
 export class MatChip extends _MatChipMixinBase implements FocusableOption, OnDestroy, CanColor,
-    CanDisable, CanDisableRipple, RippleTarget {
+  CanDisableRipple, RippleTarget, HasTabIndex {
 
   /** Reference to the RippleRenderer for the chip. */
   private _chipRipple: RippleRenderer;
+
+  /**
+   * Reference to the element that acts as the chip's ripple target. This element is
+   * dynamically added as a child node of the chip. The chip itself cannot be used as the
+   * ripple target because it must be the host of the focus indicator.
+   */
+  private _chipRippleTarget: HTMLElement;
 
   /**
    * Ripple configuration for ripples that are launched on pointer down. The ripple config
@@ -150,6 +161,9 @@ export class MatChip extends _MatChipMixinBase implements FocusableOption, OnDes
 
   /** Whether the chip list is in multi-selection mode. */
   _chipListMultiple: boolean = false;
+
+  /** Whether the chip list as a whole is disabled. */
+  _chipListDisabled: boolean = false;
 
   /** The chip avatar */
   @ContentChild(MatChipAvatar) avatar: MatChipAvatar;
@@ -196,6 +210,14 @@ export class MatChip extends _MatChipMixinBase implements FocusableOption, OnDes
   }
   protected _selectable: boolean = true;
 
+  /** Whether the chip is disabled. */
+  @Input()
+  get disabled(): boolean { return this._chipListDisabled || this._disabled; }
+  set disabled(value: boolean) {
+    this._disabled = coerceBooleanProperty(value);
+  }
+  protected _disabled: boolean = false;
+
   /**
    * Determines whether or not the chip displays the remove styling and emits (removed) events.
    */
@@ -238,15 +260,26 @@ export class MatChip extends _MatChipMixinBase implements FocusableOption, OnDes
               // @breaking-change 8.0.0 `animationMode` parameter to become required.
               @Optional() @Inject(ANIMATION_MODULE_TYPE) animationMode?: string,
               // @breaking-change 9.0.0 `_changeDetectorRef` parameter to become required.
-              private _changeDetectorRef?: ChangeDetectorRef) {
+              private _changeDetectorRef?: ChangeDetectorRef,
+              @Attribute('tabindex') tabIndex?: string,
+              // @breaking-change 11.0.0 `_document` parameter to become required.
+              @Optional() @Inject(DOCUMENT) _document?: any) {
     super(_elementRef);
 
     this._addHostClassName();
 
-    this._chipRipple = new RippleRenderer(this, _ngZone, _elementRef, platform);
+    // Dynamically create the ripple target, append it within the chip, and use it as the
+    // chip's ripple target. Adding the class '.mat-chip-ripple' ensures that it will have
+    // the proper styles.
+    this._chipRippleTarget = (_document || document).createElement('div');
+    this._chipRippleTarget.classList.add('mat-chip-ripple');
+    this._elementRef.nativeElement.appendChild(this._chipRippleTarget);
+    this._chipRipple = new RippleRenderer(this, _ngZone, this._chipRippleTarget, platform);
     this._chipRipple.setupTriggerEvents(_elementRef);
+
     this.rippleConfig = globalRippleOptions || {};
     this._animationsDisabled = animationMode === 'NoopAnimations';
+    this.tabIndex = tabIndex != null ? (parseInt(tabIndex) || -1) : -1;
   }
 
   _addHostClassName() {
@@ -418,7 +451,16 @@ export class MatChip extends _MatChipMixinBase implements FocusableOption, OnDes
   }
 })
 export class MatChipRemove {
-  constructor(protected _parentChip: MatChip) {}
+  constructor(
+    protected _parentChip: MatChip,
+    // @breaking-change 11.0.0 `elementRef` parameter to be made required.
+    elementRef?: ElementRef<HTMLElement>) {
+
+      // @breaking-change 11.0.0 Remove null check for `elementRef`.
+    if (elementRef && elementRef.nativeElement.nodeName === 'BUTTON') {
+      elementRef.nativeElement.setAttribute('type', 'button');
+    }
+   }
 
   /** Calls the parent chip's public `remove()` method if applicable. */
   _handleClick(event: Event): void {

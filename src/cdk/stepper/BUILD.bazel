@@ -1,6 +1,6 @@
-package(default_visibility = ["//visibility:public"])
-
 load("//tools:defaults.bzl", "markdown_to_html", "ng_module")
+
+package(default_visibility = ["//visibility:public"])
 
 ng_module(
     name = "stepper",
@@ -14,7 +14,6 @@ ng_module(
         "//src/cdk/bidi",
         "//src/cdk/coercion",
         "//src/cdk/keycodes",
-        "@npm//@angular/common",
         "@npm//@angular/core",
         "@npm//@angular/forms",
         "@npm//rxjs",

@@ -6,7 +6,10 @@
  * found in the LICENSE file at https://angular.io/license
  */
 
+import {CommonModule} from '@angular/common';
 import {NgModule} from '@angular/core';
+import {MatLineModule, MatRippleModule} from '@angular/material/core';
+import {MatDividerModule} from '@angular/material/divider';
 import {MatActionList} from './action-list';
 import {
   MatList,
@@ -19,6 +22,11 @@ import {MatNavList} from './nav-list';
 import {MatListOption, MatSelectionList} from './selection-list';
 
 @NgModule({
+  imports: [
+    CommonModule,
+    MatLineModule,
+    MatRippleModule,
+  ],
   exports: [
     MatList,
     MatActionList,
@@ -29,6 +37,8 @@ import {MatListOption, MatSelectionList} from './selection-list';
     MatListAvatarCssMatStyler,
     MatListIconCssMatStyler,
     MatListSubheaderCssMatStyler,
+    MatDividerModule,
+    MatLineModule,
   ],
   declarations: [
     MatList,

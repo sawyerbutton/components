@@ -6,16 +6,9 @@
  * found in the LICENSE file at https://angular.io/license
  */
 
+import {BooleanInput} from '@angular/cdk/coercion';
 import {Platform} from '@angular/cdk/platform';
-import {
-  Directive,
-  ElementRef,
-  HostListener,
-  Inject,
-  NgZone,
-  Optional,
-  ViewChild
-} from '@angular/core';
+import {Directive, ElementRef, HostListener, NgZone, ViewChild} from '@angular/core';
 import {
   CanColor,
   CanColorCtor,
@@ -29,7 +22,6 @@ import {
   mixinDisableRipple,
   RippleAnimationConfig
 } from '@angular/material/core';
-import {ANIMATION_MODULE_TYPE} from '@angular/platform-browser/animations';
 import {numbers} from '@material/ripple';
 
 /** Inputs common to all buttons. */
@@ -43,6 +35,15 @@ export const MAT_BUTTON_HOST = {
   // an unthemed version. If color is undefined, apply a CSS class that makes it easy to
   // select and style this "theme".
   '[class.mat-unthemed]': '!color',
+  // Add a class that applies to all buttons. This makes it easier to target if somebody
+  // wants to target all Material buttons.
+  '[class.mat-mdc-button-base]': 'true',
+};
+
+/** Configuration for the ripple animation. */
+const RIPPLE_ANIMATION_CONFIG: RippleAnimationConfig = {
+  enterDuration: numbers.DEACTIVATION_TIMEOUT_MS,
+  exitDuration: numbers.FG_DEACTIVATION_MS
 };
 
 /** List of classes to add to buttons instances based on host attribute selector. */
@@ -91,10 +92,7 @@ export const _MatButtonBaseMixin: CanDisableRippleCtor&CanDisableCtor&CanColorCt
 export class MatButtonBase extends _MatButtonBaseMixin implements CanDisable, CanColor,
                                                                   CanDisableRipple {
   /** The ripple animation configuration to use for the buttons. */
-  _rippleAnimation: RippleAnimationConfig = {
-    enterDuration: numbers.DEACTIVATION_TIMEOUT_MS,
-    exitDuration: numbers.FG_DEACTIVATION_MS
-  };
+  _rippleAnimation: RippleAnimationConfig = RIPPLE_ANIMATION_CONFIG;
 
   /** Whether the ripple is centered on the button. */
   _isRippleCentered = false;
@@ -104,8 +102,7 @@ export class MatButtonBase extends _MatButtonBaseMixin implements CanDisable, Ca
 
   constructor(
       elementRef: ElementRef, public _platform: Platform, public _ngZone: NgZone,
-      // TODO(devversion): Injection can be removed if angular/angular#32981 is fixed.
-      @Optional() @Inject(ANIMATION_MODULE_TYPE) public _animationMode?: string) {
+      public _animationMode?: string) {
     super(elementRef);
 
     const classList = (elementRef.nativeElement as HTMLElement).classList;
@@ -134,6 +131,9 @@ export class MatButtonBase extends _MatButtonBaseMixin implements CanDisable, Ca
   _isRippleDisabled() {
     return this.disableRipple || this.disabled;
   }
+
+  static ngAcceptInputType_disabled: BooleanInput;
+  static ngAcceptInputType_disableRipple: BooleanInput;
 }
 
 /** Shared inputs by buttons using the `<a>` tag */
@@ -153,6 +153,9 @@ export const MAT_ANCHOR_HOST = {
   // an unthemed version. If color is undefined, apply a CSS class that makes it easy to
   // select and style this "theme".
   '[class.mat-unthemed]': '!color',
+  // Add a class that applies to all buttons. This makes it easier to target if somebody
+  // wants to target all Material buttons.
+  '[class.mat-mdc-button-base]': 'true',
 };
 
 /**
@@ -163,8 +166,7 @@ export class MatAnchorBase extends MatButtonBase {
   tabIndex: number;
 
   constructor(elementRef: ElementRef, platform: Platform, ngZone: NgZone,
-              // TODO(devversion): Injection can be removed if angular/angular#32981 is fixed.
-              @Optional() @Inject(ANIMATION_MODULE_TYPE) animationMode?: string) {
+              animationMode?: string) {
     super(elementRef, platform, ngZone, animationMode);
   }
 

@@ -23,22 +23,36 @@ import {
 } from '@angular-devkit/schematics';
 import {FileSystemSchematicContext} from '@angular-devkit/schematics/tools';
 import {Schema as ComponentOptions, Style} from '@schematics/angular/component/schema';
-import {
-  addDeclarationToModule,
-  addEntryComponentToModule,
-  addExportToModule,
-} from '@schematics/angular/utility/ast-utils';
 import {InsertChange} from '@schematics/angular/utility/change';
 import {getWorkspace} from '@schematics/angular/utility/config';
 import {buildRelativePath, findModuleFromOptions} from '@schematics/angular/utility/find-module';
 import {parseName} from '@schematics/angular/utility/parse-name';
-import {buildDefaultPath} from '@schematics/angular/utility/project';
 import {validateHtmlSelector, validateName} from '@schematics/angular/utility/validation';
+import {ProjectType, WorkspaceProject} from '@schematics/angular/utility/workspace-models';
 import {readFileSync, statSync} from 'fs';
 import {dirname, join, resolve} from 'path';
+import * as ts from 'typescript';
+import {
+  addDeclarationToModule,
+  addEntryComponentToModule,
+  addExportToModule,
+} from '../utils/vendored-ast-utils';
 import {getProjectFromWorkspace} from './get-project';
 import {getDefaultComponentOptions} from './schematic-options';
-import {ts} from './version-agnostic-typescript';
+
+/**
+ * Build a default project path for generating.
+ * @param project The project to build the path for.
+ */
+function buildDefaultPath(project: WorkspaceProject): string {
+  const root = project.sourceRoot
+    ? `/${project.sourceRoot}/`
+    : `/${project.root}/src/`;
+
+  const projectDirName = project.projectType === ProjectType.Application ? 'app' : 'lib';
+
+  return `${root}${projectDirName}`;
+}
 
 /**
  * List of style extensions which are CSS compatible. All supported CLI style extensions can be

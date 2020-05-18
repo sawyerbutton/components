@@ -42,6 +42,12 @@ import {
 // Increasing integer for generating unique ids for slide-toggle components.
 let nextUniqueId = 0;
 
+/** Configuration for the ripple animation. */
+const RIPPLE_ANIMATION_CONFIG: RippleAnimationConfig = {
+  enterDuration: numbers.DEACTIVATION_TIMEOUT_MS,
+  exitDuration: numbers.FG_DEACTIVATION_MS,
+};
+
 /** @docs-private */
 export const MAT_SLIDE_TOGGLE_VALUE_ACCESSOR: any = {
   provide: NG_VALUE_ACCESSOR,
@@ -68,9 +74,9 @@ export class MatSlideToggleChange {
     '[attr.tabindex]': 'null',
     '[attr.aria-label]': 'null',
     '[attr.aria-labelledby]': 'null',
-    '[class.mat-primary]': 'color == "primary"',
-    '[class.mat-accent]': 'color == "accent"',
-    '[class.mat-warn]': 'color == "warn"',
+    '[class.mat-primary]': 'color === "primary"',
+    '[class.mat-accent]': 'color !== "primary" && color !== "warn"',
+    '[class.mat-warn]': 'color === "warn"',
     '[class.mat-mdc-slide-toggle-focused]': '_focused',
     '[class.mat-mdc-slide-toggle-checked]': 'checked',
     '[class._mat-animation-noopable]': '_animationMode === "NoopAnimations"',
@@ -86,36 +92,25 @@ export class MatSlideToggle implements ControlValueAccessor, AfterViewInit, OnDe
   private _onChange = (_: any) => {};
   private _onTouched = () => {};
 
-  private _uniqueId: string = `mat-slide-toggle-${++nextUniqueId}`;
+  private _uniqueId: string = `mat-mdc-slide-toggle-${++nextUniqueId}`;
   private _required: boolean = false;
   private _checked: boolean = false;
   private _foundation: MDCSwitchFoundation;
   private _adapter: MDCSwitchAdapter = {
-    addClass: (className) => {
-      this._toggleClass(className, true);
-    },
-    removeClass: (className) => {
-      this._toggleClass(className, false);
-    },
-    setNativeControlChecked: (checked) => {
-      this._checked = checked;
-    },
-    setNativeControlDisabled: (disabled) => {
-      this._disabled = disabled;
-    },
+    addClass: className => this._switchElement.nativeElement.classList.add(className),
+    removeClass: className => this._switchElement.nativeElement.classList.remove(className),
+    setNativeControlChecked: checked => this._checked = checked,
+    setNativeControlDisabled: disabled => this._disabled = disabled,
+    setNativeControlAttr: (name, value) => {
+      this._inputElement.nativeElement.setAttribute(name, value);
+    }
   };
 
   /** Whether the slide toggle is currently focused. */
   _focused: boolean;
 
-  /** The set of classes that should be applied to the native input. */
-  _classes: {[key: string]: boolean} = {'mdc-switch': true};
-
   /** Configuration for the underlying ripple. */
-  _rippleAnimation: RippleAnimationConfig = {
-    enterDuration: numbers.DEACTIVATION_TIMEOUT_MS,
-    exitDuration: numbers.FG_DEACTIVATION_MS,
-  };
+  _rippleAnimation: RippleAnimationConfig = RIPPLE_ANIMATION_CONFIG;
 
   /** The color palette  for this slide toggle. */
   @Input() color: ThemePalette = 'accent';
@@ -190,21 +185,14 @@ export class MatSlideToggle implements ControlValueAccessor, AfterViewInit, OnDe
   /** Event will be dispatched each time the slide-toggle input is toggled. */
   @Output() readonly toggleChange: EventEmitter<void> = new EventEmitter<void>();
 
-  /**
-   * An event will be dispatched each time the slide-toggle is dragged.
-   * This event is always emitted when the user drags the slide toggle to make a change greater
-   * than 50%. It does not mean the slide toggle's value is changed. The event is not emitted when
-   * the user toggles the slide toggle to change its value.
-   * @deprecated No longer being used.
-   * @breaking-change 9.0.0
-   */
-  @Output() readonly dragChange: EventEmitter<void> = new EventEmitter<void>();
-
   /** Returns the unique id for the visual hidden input. */
   get inputId(): string { return `${this.id || this._uniqueId}-input`; }
 
   /** Reference to the underlying input element. */
   @ViewChild('input') _inputElement: ElementRef<HTMLInputElement>;
+
+  /** Reference to the MDC switch element. */
+  @ViewChild('switch') _switchElement: ElementRef<HTMLElement>;
 
   constructor(private _changeDetectorRef: ChangeDetectorRef,
               @Attribute('tabindex') tabIndex: string,
@@ -309,12 +297,6 @@ export class MatSlideToggle implements ControlValueAccessor, AfterViewInit, OnDe
       this._onTouched();
       this._changeDetectorRef.markForCheck();
     });
-  }
-
-  /** Toggles a class on the switch element. */
-  private _toggleClass(cssClass: string, active: boolean) {
-    this._classes[cssClass] = active;
-    this._changeDetectorRef.markForCheck();
   }
 
   static ngAcceptInputType_tabIndex: NumberInput;

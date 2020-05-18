@@ -12,12 +12,15 @@ import {MatListBase} from './list-base';
 @Component({
   selector: 'mat-action-list',
   exportAs: 'matActionList',
-  templateUrl: 'list.html',
+  template: '<ng-content></ng-content>',
   host: {
-    'class': 'mat-mdc-action-list mat-mdc-list-base',
+    'class': 'mat-mdc-action-list mat-mdc-list-base mdc-list',
   },
   styleUrls: ['list.css'],
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [
+    {provide: MatListBase, useExisting: MatActionList},
+  ]
 })
 export class MatActionList extends MatListBase {}

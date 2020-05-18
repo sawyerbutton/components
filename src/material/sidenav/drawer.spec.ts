@@ -307,6 +307,28 @@ describe('MatDrawer', () => {
           .toBe(openButton, 'Expected focus to be restored to the open button on close.');
     }));
 
+    it('should restore focus to an SVG element', fakeAsync(() => {
+      const fixture = TestBed.createComponent(BasicTestApp);
+      fixture.detectChanges();
+
+      const drawer = fixture.debugElement.query(By.directive(MatDrawer))!.componentInstance;
+      const svg = fixture.componentInstance.svg.nativeElement;
+      const drawerButton = fixture.componentInstance.drawerButton.nativeElement;
+
+      svg.focus();
+      drawer.open();
+      fixture.detectChanges();
+      flush();
+      drawerButton.focus();
+
+      drawer.close();
+      fixture.detectChanges();
+      flush();
+
+      expect(document.activeElement)
+          .toBe(svg, 'Expected focus to be restored to the SVG element on close.');
+    }));
+
     it('should not restore focus on close if focus is outside drawer', fakeAsync(() => {
       let fixture = TestBed.createComponent(BasicTestApp);
       let drawer: MatDrawer = fixture.debugElement
@@ -518,7 +540,7 @@ describe('MatDrawer', () => {
       expect(document.activeElement).toBe(firstFocusableElement);
     }));
 
-    it('should not trap focus when opened in "side" mode', fakeAsync(() => {
+    it('should not auto-focus by default when opened in "side" mode', fakeAsync(() => {
       testComponent.mode = 'side';
       fixture.detectChanges();
       lastFocusableElement.focus();
@@ -528,6 +550,19 @@ describe('MatDrawer', () => {
       tick();
 
       expect(document.activeElement).toBe(lastFocusableElement);
+    }));
+
+    it('should auto-focus when opened in "side" mode when enabled explicitly', fakeAsync(() => {
+      drawer.autoFocus = true;
+      testComponent.mode = 'side';
+      fixture.detectChanges();
+      lastFocusableElement.focus();
+
+      drawer.open();
+      fixture.detectChanges();
+      tick();
+
+      expect(document.activeElement).toBe(firstFocusableElement);
     }));
 
     it('should focus the drawer if there are no focusable elements', fakeAsync(() => {
@@ -545,7 +580,7 @@ describe('MatDrawer', () => {
     }));
 
     it('should be able to disable auto focus', fakeAsync(() => {
-      testComponent.autoFocus = false;
+      drawer.autoFocus = false;
       testComponent.mode = 'push';
       fixture.detectChanges();
       lastFocusableElement.focus();
@@ -894,6 +929,14 @@ class DrawerContainerTwoDrawerTestApp {
       </mat-drawer>
       <button (click)="drawer.open()" class="open" #openButton></button>
       <button (click)="drawer.close()" class="close" #closeButton></button>
+      <svg
+        viewBox="0 0 100 100"
+        xmlns="http://www.w3.org/2000/svg"
+        tabindex="0"
+        focusable="true"
+        #svg>
+        <circle cx="50" cy="50" r="50"/>
+      </svg>
     </mat-drawer-container>`,
 })
 class BasicTestApp {
@@ -907,6 +950,7 @@ class BasicTestApp {
   @ViewChild('drawer') drawer: MatDrawer;
   @ViewChild('drawerButton') drawerButton: ElementRef<HTMLButtonElement>;
   @ViewChild('openButton') openButton: ElementRef<HTMLButtonElement>;
+  @ViewChild('svg') svg: ElementRef<SVGElement>;
   @ViewChild('closeButton') closeButton: ElementRef<HTMLButtonElement>;
 
   open() {
@@ -981,7 +1025,7 @@ class DrawerDynamicPosition {
   // to be focusable across all platforms.
   template: `
     <mat-drawer-container>
-      <mat-drawer position="start" [mode]="mode" [autoFocus]="autoFocus">
+      <mat-drawer position="start" [mode]="mode">
         <input type="text" class="input1"/>
       </mat-drawer>
       <input type="text" class="input2"/>
@@ -989,7 +1033,6 @@ class DrawerDynamicPosition {
 })
 class DrawerWithFocusableElements {
   mode: string = 'over';
-  autoFocus = true;
 }
 
 @Component({

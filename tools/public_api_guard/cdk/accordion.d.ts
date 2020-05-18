@@ -2,14 +2,15 @@ export declare class CdkAccordion implements OnDestroy, OnChanges {
     readonly _openCloseAllActions: Subject<boolean>;
     readonly _stateChanges: Subject<SimpleChanges>;
     readonly id: string;
-    multi: boolean;
+    get multi(): boolean;
+    set multi(multi: boolean);
     closeAll(): void;
     ngOnChanges(changes: SimpleChanges): void;
     ngOnDestroy(): void;
     openAll(): void;
     static ngAcceptInputType_multi: BooleanInput;
-    static ɵdir: i0.ɵɵDirectiveDefWithMeta<CdkAccordion, "cdk-accordion, [cdkAccordion]", ["cdkAccordion"], { 'multi': "multi" }, {}, never>;
-    static ɵfac: i0.ɵɵFactoryDef<CdkAccordion>;
+    static ɵdir: i0.ɵɵDirectiveDefWithMeta<CdkAccordion, "cdk-accordion, [cdkAccordion]", ["cdkAccordion"], { "multi": "multi"; }, {}, never>;
+    static ɵfac: i0.ɵɵFactoryDef<CdkAccordion, never>;
 }
 
 export declare class CdkAccordionItem implements OnDestroy {
@@ -17,8 +18,10 @@ export declare class CdkAccordionItem implements OnDestroy {
     accordion: CdkAccordion;
     closed: EventEmitter<void>;
     destroyed: EventEmitter<void>;
-    disabled: any;
-    expanded: any;
+    get disabled(): any;
+    set disabled(disabled: any);
+    get expanded(): any;
+    set expanded(expanded: any);
     expandedChange: EventEmitter<boolean>;
     readonly id: string;
     opened: EventEmitter<void>;
@@ -29,8 +32,8 @@ export declare class CdkAccordionItem implements OnDestroy {
     toggle(): void;
     static ngAcceptInputType_disabled: BooleanInput;
     static ngAcceptInputType_expanded: BooleanInput;
-    static ɵdir: i0.ɵɵDirectiveDefWithMeta<CdkAccordionItem, "cdk-accordion-item, [cdkAccordionItem]", ["cdkAccordionItem"], { 'expanded': "expanded", 'disabled': "disabled" }, { 'closed': "closed", 'opened': "opened", 'destroyed': "destroyed", 'expandedChange': "expandedChange" }, never>;
-    static ɵfac: i0.ɵɵFactoryDef<CdkAccordionItem>;
+    static ɵdir: i0.ɵɵDirectiveDefWithMeta<CdkAccordionItem, "cdk-accordion-item, [cdkAccordionItem]", ["cdkAccordionItem"], { "expanded": "expanded"; "disabled": "disabled"; }, { "closed": "closed"; "opened": "opened"; "destroyed": "destroyed"; "expandedChange": "expandedChange"; }, never>;
+    static ɵfac: i0.ɵɵFactoryDef<CdkAccordionItem, [{ optional: true; skipSelf: true; }, null, null]>;
 }
 
 export declare class CdkAccordionModule {
